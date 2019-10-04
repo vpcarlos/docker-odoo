@@ -1,5 +1,5 @@
 FROM debian:stretch
-LABEL maintainer="Aselcis Consulting S.L <info@aselcis.com>"
+LABEL maintainer="Carlos Valdivia <vpcarlos97@gmail.com>"
 
 # Generate locale C.UTF-8 for postgres and general locale data
 ENV LANG C.UTF-8
