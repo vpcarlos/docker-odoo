@@ -3,7 +3,7 @@ services:
   web:
     container_name: odoo-master
     build: .
-    image: odoo-12-master
+    image: odoo-13-master
     depends_on:
       - db
     ports:
