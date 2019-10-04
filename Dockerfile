@@ -1,5 +1,5 @@
 FROM debian:stretch
-MAINTAINER Carlos Valdivia <vpcarlos97@gmail.com>
+LABEL maintainer="Aselcis Consulting S.L <info@aselcis.com>"
 
 # Generate locale C.UTF-8 for postgres and general locale data
 ENV LANG C.UTF-8
@@ -10,6 +10,9 @@ RUN set -x; \
         && apt-get install -y --no-install-recommends \
             ca-certificates \
             curl \
+            dirmngr \
+            fonts-noto-cjk \
+            gnupg \
             libssl1.0-dev \
             node-less \
             python3-pip \
@@ -20,35 +23,54 @@ RUN set -x; \
             python3-vobject \
             python3-watchdog \
             xz-utils \
-        && curl -o wkhtmltox.deb -SL https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.stretch_amd64.deb \
+        && curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.stretch_amd64.deb \
         && echo '7e35a63f9db14f93ec7feeb0fce76b30c08f2057 wkhtmltox.deb' | sha1sum -c - \
         && dpkg --force-depends -i wkhtmltox.deb\
         && apt-get -y install -f --no-install-recommends \
         && rm -rf /var/lib/apt/lists/* wkhtmltox.deb
 
-# Install Postgres
-RUN apt-get update && apt-get install -my wget gnupg
-ENV PG_VERSION 10
+# Install latest postgresql-client
 RUN set -x; \
-    cd /tmp \
-    && curl https://www.postgresql.org/media/keys/ACCC4CF8.asc -o ACCC4CF8.asc \
-    && apt-key add ACCC4CF8.asc \
-    && echo "deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list \
+        echo 'deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main' > etc/apt/sources.list.d/pgdg.list \
+        && export GNUPGHOME="$(mktemp -d)" \
+        && repokey='B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8' \
+        && gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "${repokey}" \
+        && gpg --armor --export "${repokey}" | apt-key add - \
+        && gpgconf --kill all \
+        && rm -rf "$GNUPGHOME" \
+        && apt-get update  \
+        && apt-get install -y postgresql-client \
+        && rm -rf /var/lib/apt/lists/*
+
+# Install rtlcss (on Debian stretch)
+RUN set -x;\
+    echo "deb http://deb.nodesource.com/node_8.x stretch main" > /etc/apt/sources.list.d/nodesource.list \
+    && export GNUPGHOME="$(mktemp -d)" \
+    && repokey='9FD3B784BC1C6FC31A8A0A1C1655A0AB68576280' \
+    && gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "${repokey}" \
+    && gpg --armor --export "${repokey}" | apt-key add - \
+    && gpgconf --kill all \
+    && rm -rf "$GNUPGHOME" \
     && apt-get update \
-    && apt-get install -y --force-yes postgresql-client-${PG_VERSION} \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    && apt-get install -y nodejs \
+    && npm install -g rtlcss \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Odoo
-ENV ODOO_VERSION 12.0
-ENV ODOO_RELEASE 20190705
+ENV ODOO_VERSION 13.0
+ARG ODOO_RELEASE=20191004
+ARG ODOO_SHA=be2f01e8769995a7f42fc0bbae1bc031937a4556
 RUN set -x; \
-        curl -o odoo.deb -SL http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/odoo_${ODOO_VERSION}.${ODOO_RELEASE}_all.deb \
-        && echo '9fc8e23bc6fb498eb670da759c54bbd0d948e2c2 odoo.deb' | sha1sum -c - \
+        curl -o odoo.deb -sSL http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/odoo_${ODOO_VERSION}.${ODOO_RELEASE}_all.deb \
+        && echo "${ODOO_SHA} odoo.deb" | sha1sum -c - \
         && dpkg --force-depends -i odoo.deb \
         && apt-get update \
         && apt-get -y install -f --no-install-recommends \
         && rm -rf /var/lib/apt/lists/* odoo.deb
+
+# Install python requirements.txt
+ADD ./requirements.txt /requirements.txt
+RUN pip3 install -r /requirements.txt 
 
 # Copy entrypoint script and Odoo configuration file
 RUN pip3 install num2words xlwt
@@ -62,7 +84,7 @@ RUN mkdir -p /mnt/extra-addons \
 VOLUME ["/var/lib/odoo", "/mnt/extra-addons"]
 
 # Expose Odoo services
-EXPOSE 8069 8071 8072
+EXPOSE 8069 8072
 
 # Set the default config file
 ENV ODOO_RC /etc/odoo/odoo.conf
