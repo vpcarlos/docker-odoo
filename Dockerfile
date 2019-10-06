@@ -68,10 +68,6 @@ RUN set -x; \
         && apt-get -y install -f --no-install-recommends \
         && rm -rf /var/lib/apt/lists/* odoo.deb
 
-# Install python requirements.txt
-ADD ./requirements.txt /requirements.txt
-RUN pip3 install -r /requirements.txt 
-
 # Copy entrypoint script and Odoo configuration file
 RUN pip3 install num2words xlwt
 COPY ./entrypoint.sh /
