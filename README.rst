@@ -1,5 +1,5 @@
 ==================
-docker-odoo-postgres-nginx-letsencrypt
+docker-odoo-postgresql
 ==================
 
 .. image:: https://img.shields.io/static/v1.svg?label=license&message=LGPL%20v3&color=blue
@@ -17,8 +17,8 @@ Installation
 
 2. Replace default values with your own data:
 
-    - **docker-compose.yml** ->  POSTGRES_PASSWORD, PGPASS, VIRTUAL_HOST,LETSENCRYPT_EMAIL, LETSENCRYPT_HOST
-    - **conf/odoo.conf** -> admin_passwd, db_password
+    - docker-compose.yml ->  POSTGRES_PASSWORD, PGPASS, VIRTUAL_HOST,LETSENCRYPT_EMAIL, LETSENCRYPT_HOST
+    - conf/odoo.conf -> admin_passwd, db_password
     
 3. Run:
 
