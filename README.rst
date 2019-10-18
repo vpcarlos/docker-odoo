@@ -17,8 +17,8 @@ Installation
 
 2. Replace default values with your own data:
 
-    - docker-compose.yml** ->  POSTGRES_PASSWORD, PGPASS, VIRTUAL_HOST,LETSENCRYPT_EMAIL, LETSENCRYPT_HOST
-    - conf/odoo.conf** -> admin_passwd, db_password
+    - docker-compose.yml ->  POSTGRES_PASSWORD, PGPASS, VIRTUAL_HOST,LETSENCRYPT_EMAIL, LETSENCRYPT_HOST
+    - conf/odoo.conf -> admin_passwd, db_password
     
 3. Run:
 
