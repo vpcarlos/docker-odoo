@@ -1,5 +1,5 @@
 ==================
-docker-odoo-postgres-nginx-letsencrypt
+docker-odoo-postgesql
 ==================
 
 .. image:: https://img.shields.io/static/v1.svg?label=license&message=LGPL%20v3&color=blue
